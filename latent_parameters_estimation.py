@@ -49,12 +49,8 @@ def loss(p_landmarks, gt_landmarks, lambda_a, lambda_d, alpha, delta):
 
 
 
-### TensorBoard Writer Setup ###
-def train(bfm, img, lr=10, iters=1000):
 
-
-
-    ### Hyperparameters ###
+def train(bfm, img, model=None, lr=10, iters=1000):
 
     LEARNING_RATE = lr 
     NUM_ITERS = iters 
@@ -71,7 +67,11 @@ def train(bfm, img, lr=10, iters=1000):
     writer = SummaryWriter(log_dir=f"runs/{log_name}")
     print("To see tensorboard, run: tensorboard --logdir=runs/")
 
-    model = energy_model(device, bfm, p_landmarks)
+    if model==None:
+        model = energy_model(device, bfm, p_landmarks)
+    else:
+        model.w = nn.Parameter(torch.FloatTensor([0, 10, 0]), requires_grad=True).to(device)
+        model.t = nn.Parameter(torch.FloatTensor([0, 0, -500]), requires_grad=True).to(device)
 
 
     ### Training the model ###

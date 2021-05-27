@@ -15,11 +15,13 @@ import latent_parameters_estimation as lpe
 
 
 
-def texturize(bfm, img, save_ob=True):
-    m = lpe.train(bfm, img, iters=200)
+def texturize(bfm, img, model=None, save_ob_path=None):
+
+    if model==None:
+        model = lpe.train(bfm, img, model=None, iters=200)
     
-    w, t = m.w, m.t
-    G = pca.morphable_model(m.bfm, m.alpha, m.delta, m.device)
+    w, t = model.w, model.t
+    G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
 
     G = pca.landmark_points_rotation(G, w, t).detach().numpy()
 
@@ -53,10 +55,10 @@ def texturize(bfm, img, save_ob=True):
 
         colors[i] = f_xy
 
-    if save_ob:
-        save(bfm, colors, m)
+    if save_ob_path is not None:
+        save(bfm, colors, model, save_ob_path)
 
-def save(bfm, colors, m):
+def save(bfm, colors, model, save_ob_path):
 
     id = 30
     exp = 20
@@ -72,8 +74,8 @@ def save(bfm, colors, m):
     sigma_id =  np.sqrt(np.asarray(bfm['shape/model/pcaVariance'], float)[:id])
     sigma_exp = np.sqrt(np.asarray(bfm['expression/model/pcaVariance'], float)[:exp])
 
-    alpha = m.alpha.detach().numpy()
-    delta = m.delta.detach().numpy()
+    alpha = model.alpha.detach().numpy()
+    delta = model.delta.detach().numpy()
 
     G = mu_id + E_id @ (alpha * sigma_id) + mu_exp + E_exp @ (delta * sigma_exp)
 
@@ -88,4 +90,4 @@ if __name__=='__main__':
     img = dlib.load_rgb_image(IMAGE_PATH)
     bfm = h5py.File(BFM_PATH , 'r' )
 
-    texturize(bfm, img)
+    texturize(bfm, img, save_ob_path='images/pointcloud_texturize.OBJ')
