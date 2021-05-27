@@ -50,7 +50,7 @@ def loss(p_landmarks, gt_landmarks, lambda_a, lambda_d, alpha, delta):
 
 
 
-def train(bfm, img, model=None, lr=10, iters=1000):
+def train(bfm, img, model=None, lr=1, iters=1000):
 
     LEARNING_RATE = lr 
     NUM_ITERS = iters 
@@ -90,6 +90,7 @@ def train(bfm, img, model=None, lr=10, iters=1000):
             current_loss.backward()
 
             if current_loss<loss_min:
+                loss_min = current_loss
                 return_model = model
 
             optimizer.step()

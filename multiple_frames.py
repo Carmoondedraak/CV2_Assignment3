@@ -26,7 +26,7 @@ if __name__=='__main__':
         IMAGE_PATH = 'images/Image'+str(i)+'.jpeg'
 
         img = dlib.load_rgb_image(IMAGE_PATH)
-        model = lpe.train(bfm, img, model, iters=500)
+        model = lpe.train(bfm, img, model, lr=10, iters=500)
 
         tx.texturize(bfm, img, model=model, save_ob_path='images/multipleframes_'+str(i)+'_pointcloud.OBJ')
 
