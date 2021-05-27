@@ -12,24 +12,8 @@ import pca
 import h5py
 
 
-
-# First we define the trainable parameter
-bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
-
-### Hyperparameters ###
-
-LEARNING_RATE = 10. 
-NUM_ITERS = 1000 
-OPTIMIZER_CONSTRUCTOR = optim.Adam 
-
-### Model definition ###
-image='images/koning.png'
-img = dlib.load_rgb_image(image)
-
-p_landmarks = torch.LongTensor(np.loadtxt("supplemental_code/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32))
-gt_landmarks = torch.LongTensor(sc.detect_landmark(img))
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
+IMAGE_PATH = 'images/koning.png'
 
 # Then we define the prediction model
 torch.autograd.set_detect_anomaly(True)
@@ -50,13 +34,12 @@ class energy_model(torch.nn.Module):
 
     def forward(self):
         
-        G = pca.morphable_model(bfm, self.alpha, self.delta, self.device)
+        G = pca.morphable_model(self.bfm, self.alpha, self.delta, self.device)
         project_G = pca.landmark_points_rotation(G, self.w, self.t, self.device)
 
         return project_G[self.landmarks, :2]
 
 
-model = energy_model(device, bfm, p_landmarks)
 
 def L_lan(p_landmarks, gt_landmarks):
     return torch.mean((p_landmarks-gt_landmarks)**2)
@@ -71,10 +54,31 @@ def loss(p_landmarks, gt_landmarks, lambda_a, lambda_d, alpha, delta):
 
 
 ### TensorBoard Writer Setup ###
-def train():
+def train(bfm_path, img_path, lr=10, iters=1000):
+
+    # First we define the trainable parameter
+    bfm = h5py.File(bfm_path , 'r' )
+
+    ### Hyperparameters ###
+
+    LEARNING_RATE = lr 
+    NUM_ITERS = iters 
+    OPTIMIZER_CONSTRUCTOR = optim.Adam 
+
+    ### Model definition ###
+    image=img_path
+    img = dlib.load_rgb_image(image)
+
+    p_landmarks = torch.LongTensor(np.loadtxt("supplemental_code/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32))
+    gt_landmarks = torch.LongTensor(sc.detect_landmark(img))
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     log_name = f"{LEARNING_RATE}, {OPTIMIZER_CONSTRUCTOR.__name__}"
     writer = SummaryWriter(log_dir=f"runs/{log_name}")
     print("To see tensorboard, run: tensorboard --logdir=runs/")
+
+    model = energy_model(device, bfm, p_landmarks)
 
 
     ### Training the model ###
@@ -103,14 +107,20 @@ def train():
     return model
 
 
-m = train()
+# m = train(BFM_PATH, IMAGE_PATH)
 
-# def render():
+def texturize(bfm_path, img_path):
+    m = train(bfm_path, img_path, iters=2)
+    
+    w, t = m.w.detach().numpy(), m.t.detach().numpy()
+    G = pca.morphable_model(m.bfm, m.alpha, m.delta, m.device).detach().numpy()
 
-#     m = train()
+    
+
     
 
 
+texturize(BFM_PATH, IMAGE_PATH)
 
 # def morphable_model(bfm):
 
