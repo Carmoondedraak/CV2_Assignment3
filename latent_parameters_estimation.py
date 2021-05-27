@@ -56,8 +56,6 @@ def train(bfm, img, model=None, lr=10, iters=1000):
     NUM_ITERS = iters 
     OPTIMIZER_CONSTRUCTOR = optim.Adam 
 
-
-
     p_landmarks = torch.LongTensor(np.loadtxt("supplemental_code/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32))
     gt_landmarks = torch.LongTensor(sc.detect_landmark(img))
 
@@ -75,7 +73,7 @@ def train(bfm, img, model=None, lr=10, iters=1000):
 
 
     ### Training the model ###
-
+    loss_min = 10e10
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
     lambda_a, lambda_d = 1., 1.
     with torch.autograd.set_detect_anomaly(True):
@@ -91,13 +89,16 @@ def train(bfm, img, model=None, lr=10, iters=1000):
 
             current_loss.backward()
 
+            if current_loss<loss_min:
+                return_model = model
+
             optimizer.step()
 
             writer.add_scalar('loss', current_loss, global_step=t)
 
     writer.close()
 
-    return model
+    return return_model
 
 if __name__ == '__main__':
 

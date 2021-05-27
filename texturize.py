@@ -27,6 +27,9 @@ def texturize(bfm, img, model=None, save_ob_path=None):
 
     colors = np.zeros((G.shape[0], 3))
 
+    G[:, 0] = np.clip(G[:, 0], 0, img.shape[1] - 1)
+    G[:, 1] = np.clip(G[:, 1], 0, img.shape[0] - 1)
+
     for i, point in enumerate(G):
 
 
@@ -35,6 +38,7 @@ def texturize(bfm, img, model=None, save_ob_path=None):
 
         x1 = np.floor(x).astype(int)
         x2 = np.ceil(x).astype(int)
+
         y1 = np.floor(y).astype(int)
         y2 = np.ceil(y).astype(int)
 
