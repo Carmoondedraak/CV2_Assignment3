@@ -28,31 +28,30 @@ def morphable_model(bfm, alpha, delta, device):
 
 	return G.to(device)
 
-
+# Inspiration from https://www.meccanismocomplesso.org/en/3d-rotations-and-euler-angles-in-python/
 def rotation(degree, device):
-	omega = degree * (math.pi / 180)
+	# omega = torch.angle(degree)
+	o_x, o_y, o_z = torch.angle(degree)
+	# omega = degree * (math.pi / 180)
 
 	R_x = torch.FloatTensor(
 			[[1, 0, 0],
-			[0, torch.cos(omega[0]), -1 * torch.sin(omega[0])],
-			[0, torch.sin(omega[0]), torch.cos(omega[0])]
-			]).to(device)
+			[0, torch.cos(o_x), -1 * torch.sin(o_x)],
+			[0, torch.sin(o_x), torch.cos(o_x)]]).to(device)
 
 
 	R_y = torch.FloatTensor(
-			[[torch.cos(omega[1]), 0, torch.sin(omega[1])],
+			[[torch.cos(o_y), 0, torch.sin(o_y)],
 			[0, 1, 0],
-			[-1 * torch.sin(omega[1]), 0, torch.cos(omega[1])]
-			]).to(device)
+			[-1 * torch.sin(o_y), 0, torch.cos(o_y)]]).to(device)
 
 
 	R_z = torch.FloatTensor(
-			[[torch.cos(omega[2]), -1 * torch.sin(omega[2]), 0],
-			[torch.sin(omega[2]), torch.cos(omega[2]), 0],
-			[0, 0, 1]
-			]).to(device)
+			[[torch.cos(o_z), -1 * torch.sin(o_z), 0],
+			[torch.sin(o_z), torch.cos(o_z), 0],
+			[0, 0, 1]]).to(device)
 
-	r = R_z @ R_y @ R_x
+	r = R_x @ R_y @ R_z
 
 	return r
 
@@ -81,7 +80,8 @@ def viewport(device, imageWidth, imageHeight):
 	]).to(device)
 	return V_p
 
-def projection(device, imageWidth, imageHeight):
+# Inspiration from https://www.scratchapixel.com/code.php?id=4&origin=/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix
+def projection( device, imageWidth, imageHeight):
 
 	angleOfView = 0.5
 	n = 300
@@ -101,7 +101,7 @@ def projection(device, imageWidth, imageHeight):
 	return P
 
 def landmark_points_rotation(G, w, t, device=torch.device('cpu')):
-	
+
 	R = rotation(w, device)
 	T = translation(R, t, device)
 
