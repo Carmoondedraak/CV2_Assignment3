@@ -5,7 +5,7 @@ from scipy.spatial.transform import Rotation as R
 import csv
 import matplotlib.pyplot as plt
 
-# bfm = h5py.File("model2017-1_face12_nomouth.h5" , 'r' )
+# bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
 
 def morphable_model(bfm):
 
@@ -52,7 +52,7 @@ def translate(m, t):
 	return translated
 
 
-landmarks = np.loadtxt("Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
+landmarks = np.loadtxt("models_landmarks/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
 
 def viewport(landmarks):
 	v_r = 1
@@ -89,7 +89,7 @@ def projection(landmarks):
 
 def landmark_points(G, triangle_top, vertex_color, t):
 	rotation = rotate(G, triangle_top, vertex_color, 'y', 10, t, translation = True)
-	landmarks = np.loadtxt("Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
+	landmarks = np.loadtxt("models_landmarks/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
 	coords= rotation[landmarks]
 
 	V_p = viewport(landmarks)
@@ -104,13 +104,16 @@ def landmark_points(G, triangle_top, vertex_color, t):
 	plt.scatter(x/hom, y/hom)
 	plt.show()
 
-# morphable_model(bfm)
-t = np.array([0,0,-500])
-G, triangle_top, vertex_color = morphable_model(bfm)
-rotate(G, triangle_top, vertex_color, 'y', 10, t)
-rotate(G, triangle_top, vertex_color, 'y', -10, t)
-rotate(G, triangle_top, vertex_color, 'y', 10, t, translation = True)
+if __name__=='__main__':
+	
+	bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
+	# morphable_model(bfm)
+	t = np.array([0,0,-500])
+	G, triangle_top, vertex_color = morphable_model(bfm)
+	rotate(G, triangle_top, vertex_color, 'y', 10, t)
+	rotate(G, triangle_top, vertex_color, 'y', -10, t)
+	rotate(G, triangle_top, vertex_color, 'y', 10, t, translation = True)
 
-landmark_points(G, triangle_top, vertex_color, t)
+	landmark_points(G, triangle_top, vertex_color, t)
 
 
