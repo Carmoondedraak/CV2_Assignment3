@@ -79,7 +79,7 @@ def save(bfm, colors, model, save_ob_path):
 
     G = mu_id + E_id @ (alpha * sigma_id) + mu_exp + E_exp @ (delta * sigma_exp)
 
-    sc.save_obj('images/pointcloudyes.OBJ', G, vertex_color, triangle_top)
+    sc.save_obj(save_ob_path, G, vertex_color, triangle_top)
 
 
 if __name__=='__main__':      
