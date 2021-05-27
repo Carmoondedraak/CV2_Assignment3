@@ -1,0 +1,5 @@
+bazel*
+build
+*.egg-info
+.ipynb_checkpoints
+dist
