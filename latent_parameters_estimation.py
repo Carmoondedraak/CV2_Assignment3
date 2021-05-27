@@ -54,10 +54,9 @@ def loss(p_landmarks, gt_landmarks, lambda_a, lambda_d, alpha, delta):
 
 
 ### TensorBoard Writer Setup ###
-def train(bfm_path, img_path, lr=10, iters=1000):
+def train(bfm, img, lr=10, iters=1000):
 
-    # First we define the trainable parameter
-    bfm = h5py.File(bfm_path , 'r' )
+
 
     ### Hyperparameters ###
 
@@ -65,9 +64,7 @@ def train(bfm_path, img_path, lr=10, iters=1000):
     NUM_ITERS = iters 
     OPTIMIZER_CONSTRUCTOR = optim.Adam 
 
-    ### Model definition ###
-    image=img_path
-    img = dlib.load_rgb_image(image)
+
 
     p_landmarks = torch.LongTensor(np.loadtxt("supplemental_code/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32))
     gt_landmarks = torch.LongTensor(sc.detect_landmark(img))
@@ -107,20 +104,78 @@ def train(bfm_path, img_path, lr=10, iters=1000):
     return model
 
 
-# m = train(BFM_PATH, IMAGE_PATH)
 
-def texturize(bfm_path, img_path):
-    m = train(bfm_path, img_path, iters=2)
+
+
+def texturize(bfm, img):
+    m = train(bfm, img, iters=400)
     
-    w, t = m.w.detach().numpy(), m.t.detach().numpy()
-    G = pca.morphable_model(m.bfm, m.alpha, m.delta, m.device).detach().numpy()
+    w, t = m.w, m.t
+    G = pca.morphable_model(m.bfm, m.alpha, m.delta, m.device)
 
+    G = pca.landmark_points_rotation(G, w, t).detach().numpy()
+
+    colors = np.zeros((G.shape[0], 3))
     
+    for i, point in enumerate(G):
+        x1 = point[1]
+        x2 = point[0]
 
-    
+        x2_ceil = np.ceil(x2).astype(int)
+        x2_floor = np.floor(x2).astype(int)
+        x1_ceil = np.ceil(x1).astype(int)
+        x1_floor = np.floor(x1).astype(int)
+
+        if (x1_ceil - x1_floor == 0) or (x2_ceil - x2_floor == 0):
+            continue
+
+        # Interp over columns
+        lower = (x2_ceil - x2) / (x2_ceil - x2_floor) * img[x1_floor, x2_floor, :] \
+                + (x2 - x2_floor) / (x2_ceil - x2_floor) * img[x1_floor, x2_ceil, :]
+
+        # Interp over next row and then columns
+        upper = (x2_ceil - x2) / (x2_ceil - x2_floor) * img[x1_ceil, x2_floor, :] \
+                + (x2 - x2_floor) / (x2_ceil - x2_floor) * img[x1_ceil, x2_ceil, :]
+
+        intensity = (x1_ceil - x1) / (x1_ceil - x1_floor) * lower \
+                    + (x1 - x1_floor) / (x1_ceil - x1_floor) * upper
+
+        if any(np.isnan(intensity)):
+            continue
+
+        colors[i] = intensity
+	
+    id = 30
+
+    exp = 20
+    vertex_color = colors
+    triangle_top = np.asarray(bfm['shape/representer/cells'], int).T
+    mu_id = np.asarray(bfm['shape/model/mean'], float).reshape(-1,3)
+    mu_exp = np.asarray(bfm['expression/model/mean'], float).reshape(-1,3)
+
+    E_id = np.asarray(bfm['shape/model/pcaBasis'], float)[:,:id].reshape(-1,3, id)
+    E_exp = np.asarray(bfm['shape/model/pcaBasis'], float)[:,:exp].reshape(-1,3, exp)
+
+    sigma_id =  np.sqrt(np.asarray(bfm['shape/model/pcaVariance'], float)[:id])
+    sigma_exp = np.sqrt(np.asarray(bfm['expression/model/pcaVariance'], float)[:exp])
+
+    alpha = m.alpha.detach().numpy()
+    delta = m.delta.detach().numpy()
 
 
-texturize(BFM_PATH, IMAGE_PATH)
+    G = mu_id + E_id @ (alpha * sigma_id) + mu_exp + E_exp @ (delta * sigma_exp)
+
+    sc.save_obj('images/pointcloudyes.OBJ', G, vertex_color, triangle_top)
+    # print(G.shape, vertex_color.shape, triangle_top.shape)
+    # sc.save_obj('images/pointcloudyes.OBJ', G, vertex_color, triangle_top)
+
+        
+
+
+img = dlib.load_rgb_image(IMAGE_PATH)
+bfm = h5py.File(BFM_PATH , 'r' )
+
+texturize(bfm, img)
 
 # def morphable_model(bfm):
 

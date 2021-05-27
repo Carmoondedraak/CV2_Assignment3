@@ -81,7 +81,7 @@ def viewport(device, imageWidth, imageHeight):
 	]).to(device)
 	return V_p
 
-def projection(landmarks, device, imageWidth, imageHeight):
+def projection(device, imageWidth, imageHeight):
 
 	angleOfView = 0.5
 	n = 300
@@ -100,7 +100,7 @@ def projection(landmarks, device, imageWidth, imageHeight):
 							[0, 			0,				-1,				0]]).to(device)
 	return P
 
-def landmark_points_rotation(G, w, t, device='cpu'):
+def landmark_points_rotation(G, w, t, device=torch.device('cpu')):
 	
 	R = rotation(w, device)
 	T = translation(R, t, device)
@@ -108,7 +108,7 @@ def landmark_points_rotation(G, w, t, device='cpu'):
 	imageWidth = G[:, 0].max() - G[:, 0].min()
 	imageHeight = G[:, 1].max() - G[:, 1].min()
 	V_p = viewport(device, imageWidth, imageHeight)
-	P = projection(G, device, imageWidth, imageHeight)
+	P = projection( device, imageWidth, imageHeight)
 	Pi = V_p @ P
 	points = G.shape[0]
 
