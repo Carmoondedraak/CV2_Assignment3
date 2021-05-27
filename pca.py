@@ -30,9 +30,8 @@ def morphable_model(bfm, alpha, delta, device):
 
 # Inspiration from https://www.meccanismocomplesso.org/en/3d-rotations-and-euler-angles-in-python/
 def rotation(degree, device):
-	# omega = torch.angle(degree)
+
 	o_x, o_y, o_z = torch.angle(degree)
-	# omega = degree * (math.pi / 180)
 
 	R_x = torch.FloatTensor(
 			[[1, 0, 0],
@@ -54,18 +53,6 @@ def rotation(degree, device):
 	r = R_x @ R_y @ R_z
 
 	return r
-
-def translation(R, t, device):
-
-	T = torch.cat((R, t.reshape(3, 1)), dim=1)
-
-	# initialize last row of matrix
-	l_r = torch.FloatTensor([0, 0, 0, 1]).to(device).view(1, 4)
-
-	# concatenate last row to the rest
-	T = torch.cat((T, l_r), dim=0)
-
-	return T
 
 
 def viewport(device, imageWidth, imageHeight):
@@ -103,7 +90,10 @@ def projection( device, imageWidth, imageHeight):
 def landmark_points_rotation(G, w, t, device=torch.device('cpu')):
 
 	R = rotation(w, device)
-	T = translation(R, t, device)
+
+	R_T = torch.cat((R, t.reshape(3, 1)), dim=1)
+	R_T = torch.cat((R_T, torch.FloatTensor([0, 0, 0, 1]).to(device).view(1, 4)), dim=0)
+
 
 	imageWidth = G[:, 0].max() - G[:, 0].min()
 	imageHeight = G[:, 1].max() - G[:, 1].min()
@@ -114,7 +104,7 @@ def landmark_points_rotation(G, w, t, device=torch.device('cpu')):
 
 	G_extended = torch.cat((G, torch.ones(points).reshape(points, 1)), axis=1)
 
-	Rotated = T @ G_extended.T
+	Rotated = R_T @ G_extended.T
 
 	G = (Pi @ Rotated).T
 
