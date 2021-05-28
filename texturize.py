@@ -19,7 +19,11 @@ from PIL import Image
 def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
+<<<<<<< HEAD
         model = lpe.train(bfm, img, model=None, lr=0.2, iters=10)
+=======
+        model = lpe.train(bfm, img, model=None, lr=1, iters=2000)
+>>>>>>> 1a9cbec207f43b6ad927c2d643b565248abde9c5
 
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
