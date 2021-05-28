@@ -106,6 +106,7 @@ def train(bfm, img, model=None, lr=1, iters=1000, visualise=False):
             current_loss.backward()
 
             if current_loss<loss_min:
+                optim_iter = t
                 loss_min = current_loss
                 return_model = model
 
