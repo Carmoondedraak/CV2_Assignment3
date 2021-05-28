@@ -1,3 +1,18 @@
+# CV2_Assignment_3
+
+This is an assignment for the Computer Vision 2 course at the University of Amsterdam.
+
+It implements a face swapping pipeline using energy minimisation models, landmark detection, texturing and blending.
+
+
+Authors are Carmen Veenker, Artemis Capari and Sander Kohnstamm.
+
+To run the entire example (except for the factorize and stitch  part) run python3 main.py , it might take some time :)
+
+All the images and .OBJ files are available in /images/
+
+
+
 ## Computer Vision :: Assignment 3 ##
 
 Run
