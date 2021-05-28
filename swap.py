@@ -10,6 +10,8 @@ from latent_parameters_estimation import train
 from texturize import texturize
 from supplemental_code.supplemental_code import render
 from PIL import Image
+
+
 if __name__ == '__main__':
 
 
