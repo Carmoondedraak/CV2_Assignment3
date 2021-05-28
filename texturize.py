@@ -18,7 +18,7 @@ import latent_parameters_estimation as lpe
 def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
-        model = lpe.train(bfm, img, model=None, lr=0.3, iters=1000)
+        model = lpe.train(bfm, img, model=None, lr=0.5, iters=2000)
 
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
@@ -45,7 +45,7 @@ def texturize(bfm, img, model=None, save_ob_path=None):
         y1 = np.floor(y).astype(int)
         y2 = np.ceil(y).astype(int)
 
-        if (x1 - x2 == 0) or (y1 - y2 == 0):
+        if (x1-x2 == 0) or (y1-y2 == 0):
             continue
 
         first = 1/((x2-x1)*(y2-y1))
@@ -64,6 +64,7 @@ def texturize(bfm, img, model=None, save_ob_path=None):
 
     if save_ob_path is not None:
         G = save(bfm, colors, model, save_ob_path)
+    
     return G, colors
 
 
@@ -95,9 +96,16 @@ def save(bfm, colors, model, save_ob_path):
 if __name__=='__main__':
 
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
-    IMAGE_PATH = 'images/koning.png'
+    IMAGE_PATH = 'images/koning2.png'
 
     img = dlib.load_rgb_image(IMAGE_PATH)
     bfm = h5py.File(BFM_PATH , 'r' )
 
-    texturize(bfm, img, save_ob_path='images/pointcloud_texturize_mean.OBJ')
+    G, colors = texturize(bfm, img, save_ob_path='images/pointcloud_texturize_mean.OBJ')
+
+    image = sc.render(G, colors, np.asarray(bfm['shape/representer/cells'], int).T)
+    image = image.astype(np.int64)
+
+    plt.imshow(image)
+
+    plt.show()

@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
-from supplemental_code.supplemental_code import save_obj
+from supplemental_code.supplemental_code import save_obj, render
+
 from scipy.spatial.transform import Rotation as R
 import csv
 import matplotlib.pyplot as plt
