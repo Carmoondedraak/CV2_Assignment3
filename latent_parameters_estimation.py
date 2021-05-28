@@ -15,7 +15,7 @@ import h5py
 
 class energy_model(torch.nn.Module):
 
-    def __init__(self, device, bfm, landmarks, alpha=30, delta=20, w=[0, 10, 0], t=[ 137.5618, -186.9494, -300]):
+    def __init__(self, device, bfm, landmarks, alpha=30, delta=20, w=[0, 10, 0], t=[ 0, 0, -500]):
         super().__init__()
 
         self.landmarks = landmarks
@@ -38,10 +38,10 @@ class energy_model(torch.nn.Module):
 
 
 def L_lan(p_landmarks, gt_landmarks):
-    return torch.mean((p_landmarks-gt_landmarks)**2)
+    return torch.sum(torch.nn.PairwiseDistance(p=2)(p_landmarks, gt_landmarks)**2)
 
 def L_reg(lambda_a, lambda_d, alpha, delta):
-    return lambda_a * torch.mean(alpha**2) + lambda_d * torch.mean(delta**2)
+    return lambda_a * torch.sum(alpha**2) + lambda_d * torch.sum(delta**2)
 
 
 def loss(p_landmarks, gt_landmarks, lambda_a, lambda_d, alpha, delta):
@@ -68,7 +68,7 @@ def train(bfm, img, model=None, lr=1, iters=1000, visualise=False):
     gt_landmarks = torch.LongTensor(sc.detect_landmark(img))
 
     if visualise:
-        visualize_landmarks(img, gt_landmarks.numpy(), radius=10)
+        visualize_landmarks(img, gt_landmarks.numpy(), radius=2)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -99,7 +99,7 @@ def train(bfm, img, model=None, lr=1, iters=1000, visualise=False):
 
             if t == 0:
                 if visualise:
-                    visualize_landmarks(img, landmarks_new.detach().numpy(), radius=10)
+                    visualize_landmarks(img, landmarks_new.detach().numpy(), radius=2)
             current_loss = loss(landmarks_new, gt_landmarks, lambda_a, lambda_d, model.alpha, model.delta)
             print(current_loss)
         
@@ -120,18 +120,18 @@ def train(bfm, img, model=None, lr=1, iters=1000, visualise=False):
     print(optim_iter)
     landmarks_final = return_model.forward()
     if visualise:
-        visualize_landmarks(img, landmarks_final.detach().numpy(), radius=10)
+        visualize_landmarks(img, landmarks_final.detach().numpy(), radius=2)
     return return_model
 
 if __name__ == '__main__':
 
 
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
-    IMAGE_PATH = 'images/koning.png'
+    IMAGE_PATH = 'images/koning2.png'
     img = dlib.load_rgb_image(IMAGE_PATH)
     bfm = h5py.File(BFM_PATH , 'r' )
 
-    m = train(bfm, img, lr=10, iters=1000)
+    m = train(bfm, img, lr=0.5, iters=1000, visualise=True)
 
     print('Alpha = ', m.alpha.min(), m.alpha.max())
     print('Delta = ', m.delta.min(), m.delta.max())
