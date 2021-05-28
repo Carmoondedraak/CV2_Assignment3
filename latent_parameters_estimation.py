@@ -81,7 +81,7 @@ def train(bfm, img, model=None, lr=1, iters=1000, visualise=False):
         model = energy_model(device, bfm, p_landmarks)
     else:
         model.w = nn.Parameter(torch.FloatTensor([0, 10, 0]), requires_grad=True).to(device)
-        model.t = nn.Parameter(torch.FloatTensor([ 137.5618, -186.9494, -300]), requires_grad=True).to(device)
+        model.t = nn.Parameter(torch.FloatTensor([ 0, 0, -500]), requires_grad=True).to(device)
 
 
     ### Training the model ###
