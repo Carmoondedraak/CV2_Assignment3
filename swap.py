@@ -14,38 +14,42 @@ if __name__ == '__main__':
 
 
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
-    IMAGE_PATH = 'images/sander.jpeg'
-    # IMAGE_PATH = 'images/artemis.png'
-    img = dlib.load_rgb_image(IMAGE_PATH)
+
     bfm = h5py.File(BFM_PATH , 'r' )
-
-    # m = train(bfm, img, lr=10, iters=10)
-    uvz, color = texturize(bfm, img, save_ob_path='images/swap.OBJ')
-
-    # print('Alpha = ', m.alpha)
-    # print('Delta = ', m.delta)
-    # print('omega = ', m.w)
-    # print('T = ', m.t)
-
-    IMAGE_PATH = 'images/artemis.png'
-    bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
     triangle_top = np.asarray(bfm['shape/representer/cells'], int).T
+    # IMAGE_PATH = 'images/artemis.png'
 
-    img = dlib.load_rgb_image(IMAGE_PATH)
-    print(uvz.shape)
-    uvz2, color2= texturize(bfm, img, save_ob_path='images/swap.OBJ')
-    print(color2.shape)
-    # h,w=1000
-    # print(,w)
-    # h, w  = uvz[0].shape
-    h = int(uvz[:, 0].max())
-    w = int(uvz[:, 1].max())
-    image = render(uvz2, color, triangle_top, H=h, W=w)
-    # print("hallo")
+
+    IMAGE_PATH = 'images/one.jpg'
+    bg = dlib.load_rgb_image(IMAGE_PATH)
+    # m = train(bfm, img, lr=10, iters=10)
+    uvz, color = texturize(bfm, bg, save_ob_path='images/swap.OBJ')
+    w = int(bg.shape[0])
+    h = int(bg.shape[1])
+
+
+    IMAGE_PATH = 'images/two.jpg'
+    fg = dlib.load_rgb_image(IMAGE_PATH)
+    bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
+
+    # uvz2, color2 = texturize(bfm, fg, save_ob_path='images/swap.OBJ')
+    # print(uvz.shape)
+
+    image = render(uvz, color, triangle_top, H=h, W=w)
     im = Image.fromarray(image, 'RGB')
-    # print(image.shape)
     plt.imshow(im)
+    plt.show()
 
+
+    plt.imshow(im)
     plt.show()
     # plt.plot(image)
 
+    #
+    # print(color2.shape)
+    # h,w=1000
+    # print(,w)
+    # h, w  = uvz[0].shape
+
+    # h = int(uvz2[:, 0].max()  - uvz2[:, 0].min())
+    # w = int(uvz2[:, 1].max() - uvz2[:, 0].min())
