@@ -7,7 +7,7 @@ It implements a face swapping pipeline using energy minimisation models, landmar
 
 Authors are Carmen Veenker, Artemis Capari and Sander Kohnstamm.
 
-To run the entire example (except for the factorize and stitch  part) run python3 main.py , it might take some time :)
+To run the entire example you need to download the models and landmarks below and put them in a folder named models_landmarks, after that run python3 main.py , it might take some time :)
 
 All the images and .OBJ files are available in /images/
 
