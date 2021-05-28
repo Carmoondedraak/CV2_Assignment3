@@ -22,7 +22,7 @@ if __name__ == '__main__':
     # IMAGE_PATH = 'images/artemis.png'
 
 
-    IMAGE_PATH = 'images/one.jpg'
+    IMAGE_PATH = 'images/sander.jpeg'
     bg = dlib.load_rgb_image(IMAGE_PATH)
     # m = train(bfm, img, lr=10, iters=10)
     uvz, color = texturize(bfm, bg, save_ob_path='images/swap.OBJ')
@@ -30,21 +30,20 @@ if __name__ == '__main__':
     h = int(bg.shape[1])
 
 
-    IMAGE_PATH = 'images/two.jpg'
+    IMAGE_PATH = 'images/artemis.png'
     fg = dlib.load_rgb_image(IMAGE_PATH)
     bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
 
-    # uvz2, color2 = texturize(bfm, fg, save_ob_path='images/swap.OBJ')
+    uvz2, color2 = texturize(bfm, fg, save_ob_path='images/swap.OBJ')
     # print(uvz.shape)
 
-    image = render(uvz, color, triangle_top, H=h, W=w)
-    im = Image.fromarray(image, 'RGB')
-    plt.imshow(im)
+    image = render(uvz2, color, triangle_top, H=h, W=w)
+    save_obj('images/swap.OBJ', uvz2, color, triangle_top)
+    plt.imshow(image)
     plt.show()
 
 
-    plt.imshow(im)
-    plt.show()
+
     # plt.plot(image)
 
     #

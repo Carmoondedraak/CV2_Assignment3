@@ -50,7 +50,7 @@ def rotation(degree, device):
 			[torch.sin(o_z), torch.cos(o_z), 0],
 			[0, 0, 1]]).to(device)
 
-	r = R_x @ R_y @ R_z
+	r = R_z @ R_y @ R_x
 
 	return r
 
