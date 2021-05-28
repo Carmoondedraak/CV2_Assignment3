@@ -19,11 +19,7 @@ from PIL import Image
 def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
-<<<<<<< HEAD
-        model = lpe.train(bfm, img, model=None, lr=0.2, iters=10)
-=======
-        model = lpe.train(bfm, img, model=None, lr=1, iters=2000)
->>>>>>> 1a9cbec207f43b6ad927c2d643b565248abde9c5
+        model = lpe.train(bfm, img, model=None, lr=0.3, iters=600)
 
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
@@ -68,9 +64,9 @@ def texturize(bfm, img, model=None, save_ob_path=None):
         colors[i] = f_xy
 
     if save_ob_path is not None:
-        G = save(bfm, colors, model, save_ob_path)
+        G_new = save(bfm, colors, model, save_ob_path)
 
-    return G, colors
+    return G_new, colors
 
 
 def save(bfm, colors, model, save_ob_path):
@@ -98,29 +94,11 @@ def save(bfm, colors, model, save_ob_path):
     return G
 
 
-# if __name__=='__main__':
-
-#     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
-#     IMAGE_PATH = 'images/koning2.png'
-
-#     img = dlib.load_rgb_image(IMAGE_PATH)
-#     bfm = h5py.File(BFM_PATH , 'r' )
-#     triangle_top = np.asarray(bfm['shape/representer/cells'], int).T
-#     w = int(img.shape[0])
-#     h = int(img.shape[1])
-
-#     uvz, color = texturize(bfm, img, save_ob_path='images/pointcloud_texturize_mean.OBJ')
-#     image = render(uvz, color, triangle_top, H=h, W=w)
-
-#     plt.imshow(image)
-#     plt.show()
-
 if __name__=='__main__':
 
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
     IMAGE_PATH = 'images/koning2.png'
 
-    # i = dlib.load_rgb_image(IMAGE_PATH)
     i = cv2.imread(IMAGE_PATH)
     img = cv2.resize(i, (400,400))
     bfm = h5py.File(BFM_PATH , 'r' )
@@ -133,4 +111,3 @@ if __name__=='__main__':
     plt.imshow(image)
 
     plt.show()
-

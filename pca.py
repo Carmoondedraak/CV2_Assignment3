@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import torch
 import math
 
-# bfm = h5py.File("model2017-1_face12_nomouth.h5" , 'r' )
 
 def morphable_model(bfm, alpha, delta, device):
 
@@ -117,5 +116,3 @@ def landmark_points_rotation(G, w, t, device=torch.device('cpu')):
 
 
 	return G_new
-
-
