@@ -18,7 +18,7 @@ import latent_parameters_estimation as lpe
 def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
-        model = lpe.train(bfm, img, model=None, lr=10, iters=1000)
+        model = lpe.train(bfm, img, model=None, lr=0.3, iters=1000)
 
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
@@ -27,8 +27,11 @@ def texturize(bfm, img, model=None, save_ob_path=None):
 
     colors = np.zeros((G.shape[0], 3))
 
-    G[:, 0] = np.clip(G[:, 0], 0, img.shape[1] - 1)
-    G[:, 1] = np.clip(G[:, 1], 0, img.shape[0] - 1)
+    width, height = img.shape[0], img.shape[1]
+
+    G[:, 0] = np.clip(G[:, 0], 0, height-1)
+
+    G[:, 1] = np.clip(G[:, 1], 0, width-1)
 
     for i, point in enumerate(G):
 
@@ -97,4 +100,4 @@ if __name__=='__main__':
     img = dlib.load_rgb_image(IMAGE_PATH)
     bfm = h5py.File(BFM_PATH , 'r' )
 
-    texturize(bfm, img, save_ob_path='images/pointcloud_texturize.OBJ')
+    texturize(bfm, img, save_ob_path='images/pointcloud_texturize_mean.OBJ')
