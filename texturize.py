@@ -12,65 +12,14 @@ import numpy as np
 import pca
 import h5py
 import latent_parameters_estimation as lpe
-from supplemental_code.supplemental_code import render
+from supplemental_code.supplemental_code import render, detect_landmark
 import cv2
-def bilinear_sampler(img, x, y):
-    # prepare useful params
-    B = tf.shape(img)[0]
-    H = tf.shape(img)[1]
-    W = tf.shape(img)[2]
-    C = tf.shape(img)[3]
-
-    max_y = tf.cast(H - 1, 'int32')
-    max_x = tf.cast(W - 1, 'int32')
-
-    # grab 4 nearest corner points for each (x_i, y_i)
-    # i.e. we need a rectangle around the point of interest
-    x0 = tf.cast(tf.floor(x), 'int32')
-    x1 = x0 + 1
-    y0 = tf.cast(tf.floor(y), 'int32')
-    y1 = y0 + 1
-    zero = tf.zeros_like(x0)
-
-    # clip to range [0, H/W] to not violate img boundaries
-    x0 = tf.clip_by_value(x0, zero, max_x)
-    x1 = tf.clip_by_value(x1, zero, max_x)
-    y0 = tf.clip_by_value(y0, zero, max_y)
-    y1 = tf.clip_by_value(y1, zero, max_y)
-
-    # get pixel value at corner coords
-    Ia = _get_pixel_value(img, x0, y0)
-    Ib = _get_pixel_value(img, x0, y1)
-    Ic = _get_pixel_value(img, x1, y0)
-    Id = _get_pixel_value(img, x1, y1)
-
-    # recast as float for delta calculation
-    x0 = tf.cast(x0, 'float32')
-    x1 = tf.cast(x1, 'float32')
-    y0 = tf.cast(y0, 'float32')
-    y1 = tf.cast(y1, 'float32')
-
-    # calculate deltas
-    wa = (x1-x) * (y1-y)
-    wb = (x1-x) * (y-y0)
-    wc = (x-x0) * (y1-y)
-    wd = (x-x0) * (y-y0)
-
-    # add dimension for addition
-    wa = tf.expand_dims(wa, axis=2)
-    wb = tf.expand_dims(wb, axis=2)
-    wc = tf.expand_dims(wc, axis=2)
-    wd = tf.expand_dims(wd, axis=2)
-
-    # compute output
-    out = tf.add_n([wa*Ia, wb*Ib, wc*Ic, wd*Id])
-
-    return out
+from PIL import Image
 
 def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
-        model = lpe.train(bfm, img, model=None, lr=0.2, iters=2000)
+        model = lpe.train(bfm, img, model=None, lr=0.2, iters=10)
 
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
@@ -167,8 +116,9 @@ if __name__=='__main__':
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
     IMAGE_PATH = 'images/koning2.png'
 
-    img = dlib.load_rgb_image(IMAGE_PATH)
-    # img = cv2.imread(IMAGE_PATH)
+    # i = dlib.load_rgb_image(IMAGE_PATH)
+    i = cv2.imread(IMAGE_PATH)
+    img = cv2.resize(i, (400,400))
     bfm = h5py.File(BFM_PATH , 'r' )
 
     G, colors = texturize(bfm, img, save_ob_path='images/pointcloud_texturize_mean.OBJ')
@@ -179,3 +129,4 @@ if __name__=='__main__':
     plt.imshow(image)
 
     plt.show()
+

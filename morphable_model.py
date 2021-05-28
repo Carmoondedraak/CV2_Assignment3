@@ -1,12 +1,13 @@
 import h5py
 import numpy as np
-from supplemental_code.supplemental_code import save_obj, render
+from supplemental_code.supplemental_code import save_obj, render, detect_landmark, visualize_landmarks
 
 from scipy.spatial.transform import Rotation as R
 import csv
 import matplotlib.pyplot as plt
 
 from copy import deepcopy
+from PIL import Image
 
 def morphable_model(bfm):
 
@@ -74,14 +75,14 @@ def translate(m, t):
 landmarks = np.loadtxt("models_landmarks/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
 
 def viewport(landmarks):
-	w = np.max(landmarks[:, 2])
-	h = np.min(landmarks[:, 2])
+	h = landmarks[:, 0].max() - landmarks[:, 0].min()
+	w = landmarks[:, 1].max() - landmarks[:, 1].min()
 
 	V_p = np.array([
-	[w,		0, 				0, 		w],
-	[0,				-h,		0,		h],
-	[0,					0,				0.5,			0.5],
-	[0,					0,				0,				1  ]
+	[w,		0,		0,		w],
+	[0,		h,		0,		h],
+	[0,		0,		0.5,	0.5],
+	[0,		0,		0,		1]
 	])
 
 	return V_p
@@ -117,12 +118,15 @@ def landmark_points(G, triangle_top, vertex_color, degree, t):
 	Pi =  V_p @ P
 
 
-	coords_3D = (coords @ Pi)
+	coords_3D = (coords @ Pi.T)
 	x = coords_3D[:, 0]
 	y = coords_3D[:, 1]
 	hom = coords_3D[:, 3]
 	plt.scatter(x/hom, y/hom)
+	plt.savefig("images/landmark_points.png")
 	plt.show()
+	return x, y, hom
+
 
 if __name__ == '__main__':
 	bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
@@ -134,7 +138,18 @@ if __name__ == '__main__':
 	rotate(G, triangle_top, vertex_color, np.array([0,-10, 0]), t, translation=False)
 	rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=True)
 
-	landmark_points(G, triangle_top, vertex_color, degree, t)
+
+	x,y,hom = landmark_points(G, triangle_top, vertex_color, degree, t)
+
+	# Compare to landmarks from supplemental code:
+	# img = Image.open('images/10.png')
+	# grey = np.array(img.convert("L"))
+	# plt.imshow(img)
+	# og = detect_landmark(grey)
+	# plt.scatter(og[:, 0], og[:, 1])
+
+	# plt.savefig("images/landmarks.png")
+	# plt.show()
 
 
 

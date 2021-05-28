@@ -44,13 +44,3 @@ if __name__ == '__main__':
 
 
 
-    # plt.plot(image)
-
-    #
-    # print(color2.shape)
-    # h,w=1000
-    # print(,w)
-    # h, w  = uvz[0].shape
-
-    # h = int(uvz2[:, 0].max()  - uvz2[:, 0].min())
-    # w = int(uvz2[:, 1].max() - uvz2[:, 0].min())
