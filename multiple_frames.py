@@ -21,11 +21,11 @@ if __name__=='__main__':
     bfm = h5py.File(BFM_PATH , 'r' )
     model=None
     for i in range(4):
-
+        print('-----------frame ' + str(i) + '-------------------')
         IMAGE_PATH = 'images/image'+str(i)+'.png'
 
         img = dlib.load_rgb_image(IMAGE_PATH)
-        model = lpe.train(bfm, img, model, lr=0.6, iters=2000)
+        model = lpe.train(bfm, img, model, lr=0.45, iters=2000)
 
         tx.texturize(bfm, img, model=model, save_ob_path='images/multipleframes_'+str(i)+'_pointcloud.OBJ')
 

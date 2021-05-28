@@ -14,18 +14,18 @@ import latent_parameters_estimation as lpe
 import texturize as tx
 
 
-if __name__='__main__':
+if __name__=='__main__':
 
     bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
-	t = np.asarray([0,0,-500])
-	degree = np.array([0, 10, 0])
+    t = np.asarray([0,0,-500])
+    degree = np.array([0, 10, 0])
 
-	G, triangle_top, vertex_color = morphable_model(bfm)
-	rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=False)
-	rotate(G, triangle_top, vertex_color, np.array([0,-10, 0]), t, translation=False)
-	rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=True)
+    G, triangle_top, vertex_color = morphable_model(bfm)
+    rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=False)
+    rotate(G, triangle_top, vertex_color, np.array([0,-10, 0]), t, translation=False)
+    rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=True)
 
-	landmark_points(G, triangle_top, vertex_color, degree, t)
+    landmark_points(G, triangle_top, vertex_color, degree, t)
 
 
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
