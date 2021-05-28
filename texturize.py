@@ -18,7 +18,7 @@ import latent_parameters_estimation as lpe
 def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
-        model = lpe.train(bfm, img, model=None, lr=0.5, iters=2000)
+        model = lpe.train(bfm, img, model=None, lr=0.2, iters=2000)
 
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
