@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 import supplemental_code.supplemental_code as sc
 from torch.autograd import Variable
 import numpy as np
-import pca 
+import pca
 import h5py
 import latent_parameters_estimation as lpe
 
@@ -19,7 +19,7 @@ def texturize(bfm, img, model=None, save_ob_path=None):
 
     if model==None:
         model = lpe.train(bfm, img, model=None, lr=10, iters=1000)
-    
+
     w, t = model.w, model.t
     G = pca.morphable_model(model.bfm, model.alpha, model.delta, model.device)
 
@@ -63,7 +63,9 @@ def texturize(bfm, img, model=None, save_ob_path=None):
         colors[i] = f_xy
 
     if save_ob_path is not None:
-        save(bfm, colors, model, save_ob_path)
+        G = save(bfm, colors, model, save_ob_path)
+    return G, colors
+
 
 def save(bfm, colors, model, save_ob_path):
 
@@ -87,9 +89,10 @@ def save(bfm, colors, model, save_ob_path):
     G = mu_id + E_id @ (alpha * sigma_id) + mu_exp + E_exp @ (delta * sigma_exp)
 
     sc.save_obj(save_ob_path, G, vertex_color, triangle_top)
+    return G
 
 
-if __name__=='__main__':      
+if __name__=='__main__':
 
     BFM_PATH = "models_landmarks/model2017-1_face12_nomouth.h5"
     IMAGE_PATH = 'images/koning.png'

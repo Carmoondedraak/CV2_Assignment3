@@ -114,6 +114,8 @@ def landmark_points_rotation(G, w, t, device=torch.device('cpu')):
 	for i in range(G.shape[1]-1):
 		G_new = torch.cat((G_new, (G[:, i]/G[:, -1]).view(G_new.shape[0], 1)), axis=1)
 
+
+
 	return G_new
 
 

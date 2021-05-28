@@ -5,7 +5,7 @@ from scipy.spatial.transform import Rotation as R
 import csv
 import matplotlib.pyplot as plt
 
-# bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
+from copy import deepcopy
 
 def morphable_model(bfm):
 
@@ -26,8 +26,6 @@ def morphable_model(bfm):
 
 	alpha = np.random.uniform(-1, 1, size=(id))
 	delta = np.random.uniform(-1, 1, size=(exp))
-	# alpha = (2 * (np.random.random(id) - 1))
-	# delta = (2 * (np.random.random(exp) - 1))
 
 
 	G = mu_id + E_id @ (alpha * sigma_id) + mu_exp + E_exp @ (delta * sigma_exp)
@@ -37,14 +35,34 @@ def morphable_model(bfm):
 	return G, triangle_top, vertex_color
 
 
+# Inspiration from https://www.meccanismocomplesso.org/en/3d-rotations-and-euler-angles-in-python/
+def rotate(G, triangle_top, vertex_color, degree, t, translation=False):
 
-def rotate(G, triangle_top, vertex_color,axis,degree,t, translation=False):
-	r = R.from_euler(axis, degree, degrees=True)
-	rotated_matrix = G @ r.as_matrix()
+	o_x, o_y, o_z = np.radians(degree)
+
+	R_x = 	np.array(
+			[[1, 0, 0],
+			[0, np.cos(o_x), -1 * np.sin(o_x)],
+			[0, np.sin(o_x), np.cos(o_x)]])
+
+	R_y = np.array(
+			[[np.cos(o_y), 0, np.sin(o_y)],
+			[0, 1, 0],
+			[-1 * np.sin(o_y), 0, np.cos(o_y)]])
+
+	R_z = np.array(
+			[[np.cos(o_z), -1 * np.sin(o_z), 0],
+			[np.sin(o_z), np.cos(o_z), 0],
+			[0, 0, 1]])
+
+	r =  R_x @ R_y @ R_z
+
+	rotated_matrix = G @ r.T
 	if translation:
 		rotated_matrix = translate(rotated_matrix, t)
-	save_obj('images/rotated_matrix_{}{}{}.OBJ'.format(axis,degree,translation),rotated_matrix, vertex_color, triangle_top)
-	# save_obj('images/rotated_matrix_{}_{}_{}.OBJ'.format(axis,degree,translation),rotated_matrix,  triangle_top[:28588], vertex_color)
+
+	save_obj('images/rotated_matrix_{}{}.OBJ'.format(degree,translation),rotated_matrix, vertex_color, triangle_top)
+
 	return rotated_matrix
 
 def translate(m, t):
@@ -55,19 +73,19 @@ def translate(m, t):
 landmarks = np.loadtxt("models_landmarks/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
 
 def viewport(landmarks):
-	v_r = 1
-	v_t = 1
-	v_l = -1
-	v_b = -1
-	# width / 2, height / 2
+	w = np.max(landmarks[:, 2])
+	h = np.min(landmarks[:, 2])
+
 	V_p = np.array([
-		[(v_r-v_l)/2,		0, 				0, 		(v_r + v_l)/2],
-		[0,				(v_t - v_b)/2,		0,		(v_t + v_b)/2],
-		[0,					0,				0.5,			0.5],
-		[0,					0,				0,				1  ]
+	[w,		0, 				0, 		w],
+	[0,				-h,		0,		h],
+	[0,					0,				0.5,			0.5],
+	[0,					0,				0,				1  ]
 	])
+
 	return V_p
 
+# Inspiration from https://www.scratchapixel.com/code.php?id=4&origin=/lessons/3d-basic-rendering/perspective-and-orthographic-projection-matrix
 def projection(landmarks):
 	imageWidth, imageHeight = landmarks.shape
 	angleOfView = 90
@@ -87,33 +105,37 @@ def projection(landmarks):
 					[0, 			0,				-1,				0]])
 	return P
 
-def landmark_points(G, triangle_top, vertex_color, t):
-	rotation = rotate(G, triangle_top, vertex_color, 'y', 10, t, translation = True)
+def landmark_points(G, triangle_top, vertex_color, degree, t):
+	rotation = rotate(G, triangle_top, vertex_color, degree, t, translation=True)
+	# rotation = rotate(G, triangle_top, vertex_color, 'y', 10, t, translation = True)
 	landmarks = np.loadtxt("models_landmarks/Landmarks68_model2017-1_face12_nomouth.anl", dtype=np.int32)
 	coords= rotation[landmarks]
-
-	V_p = viewport(landmarks)
-	P = projection(coords)
-	Pi = V_p @ P
-
 	coords = np.hstack((coords, np.ones((coords.shape[0], 1))))
-	coords_3D = coords @ Pi.T
+	V_p = viewport(coords)
+	P = projection(coords)
+	Pi =  V_p @ P
+
+
+	coords_3D = (coords @ Pi)
 	x = coords_3D[:, 0]
 	y = coords_3D[:, 1]
 	hom = coords_3D[:, 3]
 	plt.scatter(x/hom, y/hom)
 	plt.show()
 
-if __name__=='__main__':
-	
+if __name__ == '__main__':
 	bfm = h5py.File("models_landmarks/model2017-1_face12_nomouth.h5" , 'r' )
-	# morphable_model(bfm)
-	t = np.array([0,0,-500])
-	G, triangle_top, vertex_color = morphable_model(bfm)
-	rotate(G, triangle_top, vertex_color, 'y', 10, t)
-	rotate(G, triangle_top, vertex_color, 'y', -10, t)
-	rotate(G, triangle_top, vertex_color, 'y', 10, t, translation = True)
+	t = np.asarray([0,0,-500])
+	degree = np.array([0, 10, 0])
 
-	landmark_points(G, triangle_top, vertex_color, t)
+	G, triangle_top, vertex_color = morphable_model(bfm)
+	rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=False)
+	rotate(G, triangle_top, vertex_color, np.array([0,-10, 0]), t, translation=False)
+	rotate(G, triangle_top, vertex_color, np.array([0,10, 0]), t, translation=True)
+
+	landmark_points(G, triangle_top, vertex_color, degree, t)
+
+
+
 
 
